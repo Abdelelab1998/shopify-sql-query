@@ -2,6 +2,9 @@
   "name": "shopify-sql-query",
   "version": "1.0.0",
   "description": "SQL query interface for Shopify stores",
+  "engines": {
+    "node": "18.x"
+  },
   "scripts": {
     "build:css": "tailwindcss -i ./src/input.css -o ./public/styles.css --minify",
     "watch:css": "tailwindcss -i ./src/input.css -o ./public/styles.css --watch",
@@ -9,10 +12,10 @@
     "build": "npm run build:css"
   },
   "dependencies": {
-  "better-sqlite3": "^9.0.0",
-  "crypto-js": "^4.2.0",
-  "axios": "^1.6.2"
-},
+    "better-sqlite3": "^9.0.0",
+    "crypto-js": "^4.2.0",
+    "axios": "^1.6.2"
+  },
   "devDependencies": {
     "tailwindcss": "^3.4.0",
     "concurrently": "^8.2.2"
