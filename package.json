@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "SQL query interface for Shopify stores",
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   },
   "scripts": {
     "build:css": "tailwindcss -i ./src/input.css -o ./public/styles.css --minify",
