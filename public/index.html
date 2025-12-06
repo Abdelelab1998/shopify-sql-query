@@ -73,6 +73,18 @@
     );
 
     const ShopifyQueryApp = () => {
+      // Initialize state from localStorage if available
+      const getStoredCredentials = () => {
+        try {
+          const stored = localStorage.getItem('shopify_sql_credentials');
+          return stored ? JSON.parse(stored) : null;
+        } catch (e) {
+          return null;
+        }
+      };
+
+      const storedCreds = getStoredCredentials();
+      
       const [sqlQuery, setSqlQuery] = useState('');
       const [results, setResults] = useState(null);
       const [suggestions, setSuggestions] = useState([]);
@@ -82,10 +94,10 @@
       const [error, setError] = useState('');
       const [showDocs, setShowDocs] = useState(false);
       const [showConnect, setShowConnect] = useState(false);
-      const [connected, setConnected] = useState(false);
-      const [credentials, setCredentials] = useState(null);
+      const [connected, setConnected] = useState(!!storedCreds);
+      const [credentials, setCredentials] = useState(storedCreds);
       const [connectionForm, setConnectionForm] = useState({
-        storeName: '',
+        storeName: storedCreds?.storeName || '',
         apiPassword: ''
       });
 
@@ -167,15 +179,31 @@
           return;
         }
         
-        setCredentials({
+        const newCredentials = {
           storeName: connectionForm.storeName.replace('https://', '').replace('http://', ''),
           apiPassword: connectionForm.apiPassword
-        });
+        };
+        
+        // Save to localStorage for persistence
+        try {
+          localStorage.setItem('shopify_sql_credentials', JSON.stringify(newCredentials));
+        } catch (e) {
+          console.warn('Could not save credentials to localStorage');
+        }
+        
+        setCredentials(newCredentials);
         setConnected(true);
         setShowConnect(false);
       };
 
       const handleDisconnect = () => {
+        // Clear from localStorage
+        try {
+          localStorage.removeItem('shopify_sql_credentials');
+        } catch (e) {
+          console.warn('Could not clear credentials from localStorage');
+        }
+        
         setCredentials(null);
         setConnected(false);
         setResults(null);
@@ -356,7 +384,9 @@
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-2 px-2.5 py-1.5 bg-teal-50 border border-teal-200 rounded text-teal-700">
                       <div className="w-1.5 h-1.5 bg-teal-500 rounded-full"></div>
-                      <span className="text-xs font-medium">Connected</span>
+                      <span className="text-xs font-medium">
+                        {credentials?.storeName?.replace('.myshopify.com', '') || 'Connected'}
+                      </span>
                     </div>
                     <button
                       onClick={handleDisconnect}
