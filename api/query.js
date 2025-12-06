@@ -36,6 +36,23 @@ class SQLParser {
   }
 }
 
+// Helper to clean and validate store name
+function cleanStoreName(storeName) {
+  let cleaned = storeName
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, '')  // Remove protocol
+    .replace(/\/$/, '')            // Remove trailing slash
+    .replace(/\/.*$/, '');         // Remove any path
+  
+  // If they just entered the store name without .myshopify.com, add it
+  if (!cleaned.includes('.myshopify.com') && !cleaned.includes('.')) {
+    cleaned = `${cleaned}.myshopify.com`;
+  }
+  
+  return cleaned;
+}
+
 function applyFilters(data, parsed) {
   let results = [...data];
   
@@ -100,7 +117,16 @@ module.exports = async (req, res) => {
     const parser = new SQLParser();
     const parsed = parser.parse(sql);
     
-    const baseUrl = `https://${credentials.storeName}/admin/api/2025-01`;
+    // Clean and validate the store name
+    const storeName = cleanStoreName(credentials.storeName);
+    const accessToken = credentials.apiPassword?.trim();
+    
+    if (!accessToken) {
+      return res.status(400).json({ error: 'Missing API access token' });
+    }
+    
+    // Use a stable API version (2024-01 is widely supported)
+    const baseUrl = `https://${storeName}/admin/api/2024-01`;
     const endpoints = {
       orders: '/orders.json',
       products: '/products.json',
@@ -108,11 +134,13 @@ module.exports = async (req, res) => {
     };
     
     const endpoint = endpoints[parsed.table];
-    if (!endpoint) return res.status(400).json({ error: `Table ${parsed.table} not supported` });
+    if (!endpoint) return res.status(400).json({ error: `Table "${parsed.table}" not supported. Use: orders, products, or customers` });
+    
+    console.log(`Fetching from: ${baseUrl}${endpoint}`);
     
     const response = await axios.get(`${baseUrl}${endpoint}`, {
       headers: { 
-        'X-Shopify-Access-Token': credentials.apiPassword,
+        'X-Shopify-Access-Token': accessToken,
         'Content-Type': 'application/json'
       },
       params: { limit: 250 }
@@ -155,7 +183,27 @@ module.exports = async (req, res) => {
     res.status(200).json({ results, count: results.length });
     
   } catch (error) {
-    console.error('Query error:', error.message);
-    res.status(500).json({ error: error.message });
+    console.error('Query error:', error.response?.data || error.message);
+    
+    // Provide helpful error messages
+    if (error.response?.status === 401) {
+      return res.status(401).json({ 
+        error: 'Authentication failed. Please check:\n1. Your access token is correct (starts with shpat_)\n2. The app is installed on your store\n3. The token has read_orders, read_products, read_customers scopes'
+      });
+    }
+    
+    if (error.response?.status === 404) {
+      return res.status(404).json({ 
+        error: 'Store not found. Please check your store URL (e.g., my-store.myshopify.com)'
+      });
+    }
+    
+    if (error.response?.status === 403) {
+      return res.status(403).json({ 
+        error: 'Access denied. Your API token may not have the required permissions (read_orders, read_products, read_customers)'
+      });
+    }
+    
+    res.status(500).json({ error: error.response?.data?.errors || error.message });
   }
 };
