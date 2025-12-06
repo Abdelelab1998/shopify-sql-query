@@ -1,5 +1,5 @@
 const axios = require("axios");
-const Database = require("better-sqlite3");
+const duckdb = require('@duckdb/duckdb-wasm');
 const CryptoJS = require("crypto-js");
 
 /* -------------------------------------------------------
