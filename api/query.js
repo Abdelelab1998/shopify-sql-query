@@ -137,7 +137,7 @@ function parseCookies(cookieHeader) {
   return cookies;
 }
 
-// GraphQL query builder for different resources - NOW WITH UTM/SESSION DATA
+// GraphQL queries for each resource
 const graphqlQueries = {
   orders: `
     query($first: Int!, $after: String) {
@@ -163,12 +163,7 @@ const graphqlQueries = {
           fulfillable
           note
           tags
-          
-          # Source Attribution
           sourceName
-          sourceIdentifier
-          
-          # Customer Journey & UTM Data
           customerJourneySummary {
             ready
             daysToConversion
@@ -176,12 +171,10 @@ const graphqlQueries = {
             firstVisit {
               occurredAt
               landingPage
-              landingPageHtml
               referrerUrl
               source
               sourceType
               referralCode
-              referralInfoHtml
               utmParameters {
                 source
                 medium
@@ -193,7 +186,6 @@ const graphqlQueries = {
             lastVisit {
               occurredAt
               landingPage
-              landingPageHtml
               referrerUrl
               source
               sourceType
@@ -207,7 +199,6 @@ const graphqlQueries = {
               }
             }
           }
-          
           customer { id firstName lastName email phone }
           shippingAddress { address1 address2 city province country zip }
           billingAddress { address1 address2 city province country zip }
@@ -288,10 +279,6 @@ const graphqlQueries = {
             address1 address2 city province provinceCode country countryCodeV2 zip 
             company phone
           }
-          addresses(first: 10) {
-            address1 address2 city province country zip
-          }
-          orders(first: 10) { nodes { id name totalPriceSet { shopMoney { amount } } } }
         }
       }
     }
@@ -358,31 +345,6 @@ const graphqlQueries = {
     }
   `,
   
-  draft_orders: `
-    query($first: Int!, $after: String) {
-      draftOrders(first: $first, after: $after) {
-        pageInfo { hasNextPage endCursor }
-        nodes {
-          id
-          name
-          email
-          createdAt
-          updatedAt
-          status
-          totalPriceSet { shopMoney { amount currencyCode } }
-          subtotalPriceSet { shopMoney { amount currencyCode } }
-          totalTaxSet { shopMoney { amount currencyCode } }
-          customer { id firstName lastName email }
-          lineItems(first: 50) { 
-            nodes { id title quantity 
-              originalUnitPriceSet { shopMoney { amount } }
-            } 
-          }
-        }
-      }
-    }
-  `,
-  
   shop: `
     query {
       shop {
@@ -411,14 +373,19 @@ function transformToTable(resource, data) {
         const lastVisit = journey?.lastVisit;
         
         return {
+          // Order identifiers
           id: o.id?.split('/').pop(),
           order_number: o.name,
           email: o.email,
+          
+          // Timestamps
           created_at: o.createdAt,
           updated_at: o.updatedAt,
           cancelled_at: o.cancelledAt,
           closed_at: o.closedAt,
           processed_at: o.processedAt,
+          
+          // Financial
           total_price: parseFloat(o.totalPriceSet?.shopMoney?.amount || 0),
           subtotal_price: parseFloat(o.subtotalPriceSet?.shopMoney?.amount || 0),
           total_tax: parseFloat(o.totalTaxSet?.shopMoney?.amount || 0),
@@ -426,30 +393,30 @@ function transformToTable(resource, data) {
           total_discounts: parseFloat(o.totalDiscountsSet?.shopMoney?.amount || 0),
           total_refunded: parseFloat(o.totalRefundedSet?.shopMoney?.amount || 0),
           currency: o.totalPriceSet?.shopMoney?.currencyCode,
+          
+          // Status
           financial_status: o.displayFinancialStatus,
           fulfillment_status: o.displayFulfillmentStatus,
           fulfillable: o.fulfillable,
+          
+          // Misc
           note: o.note,
           tags: o.tags?.join(', '),
-          
-          // Source Attribution
           source_name: o.sourceName,
-          source_identifier: o.sourceIdentifier,
+          line_items_count: o.lineItems?.nodes?.length || 0,
           
-          // Journey Summary
+          // Customer Journey
           journey_ready: journey?.ready,
           days_to_conversion: journey?.daysToConversion,
           touchpoints_count: journey?.momentsCount?.count,
           
           // First Visit (Acquisition)
           first_visit_at: firstVisit?.occurredAt,
-          first_visit_landing_page: firstVisit?.landingPage,
-          first_visit_referrer: firstVisit?.referrerUrl,
-          first_visit_source: firstVisit?.source,
-          first_visit_source_type: firstVisit?.sourceType,
-          first_visit_referral_code: firstVisit?.referralCode,
-          
-          // First Visit UTM Parameters
+          first_landing_page: firstVisit?.landingPage,
+          first_referrer: firstVisit?.referrerUrl,
+          first_source: firstVisit?.source,
+          first_source_type: firstVisit?.sourceType,
+          first_referral_code: firstVisit?.referralCode,
           first_utm_source: firstVisit?.utmParameters?.source,
           first_utm_medium: firstVisit?.utmParameters?.medium,
           first_utm_campaign: firstVisit?.utmParameters?.campaign,
@@ -458,20 +425,18 @@ function transformToTable(resource, data) {
           
           // Last Visit (Conversion)
           last_visit_at: lastVisit?.occurredAt,
-          last_visit_landing_page: lastVisit?.landingPage,
-          last_visit_referrer: lastVisit?.referrerUrl,
-          last_visit_source: lastVisit?.source,
-          last_visit_source_type: lastVisit?.sourceType,
-          last_visit_referral_code: lastVisit?.referralCode,
-          
-          // Last Visit UTM Parameters
+          last_landing_page: lastVisit?.landingPage,
+          last_referrer: lastVisit?.referrerUrl,
+          last_source: lastVisit?.source,
+          last_source_type: lastVisit?.sourceType,
+          last_referral_code: lastVisit?.referralCode,
           last_utm_source: lastVisit?.utmParameters?.source,
           last_utm_medium: lastVisit?.utmParameters?.medium,
           last_utm_campaign: lastVisit?.utmParameters?.campaign,
           last_utm_content: lastVisit?.utmParameters?.content,
           last_utm_term: lastVisit?.utmParameters?.term,
           
-          // Customer Info
+          // Customer
           customer_id: o.customer?.id?.split('/').pop(),
           customer_email: o.customer?.email,
           customer_first_name: o.customer?.firstName,
@@ -480,6 +445,7 @@ function transformToTable(resource, data) {
           
           // Shipping Address
           shipping_address1: o.shippingAddress?.address1,
+          shipping_address2: o.shippingAddress?.address2,
           shipping_city: o.shippingAddress?.city,
           shipping_province: o.shippingAddress?.province,
           shipping_country: o.shippingAddress?.country,
@@ -487,66 +453,13 @@ function transformToTable(resource, data) {
           
           // Billing Address
           billing_address1: o.billingAddress?.address1,
+          billing_address2: o.billingAddress?.address2,
           billing_city: o.billingAddress?.city,
           billing_province: o.billingAddress?.province,
           billing_country: o.billingAddress?.country,
-          billing_zip: o.billingAddress?.zip,
-          
-          line_items_count: o.lineItems?.nodes?.length || 0
+          billing_zip: o.billingAddress?.zip
         };
       });
-      
-    case 'order_sessions':
-      // Separate table for session/visit data (for JOINs)
-      const sessions = [];
-      data.forEach(o => {
-        const journey = o.customerJourneySummary;
-        const orderId = o.id?.split('/').pop();
-        const orderNumber = o.name;
-        
-        if (journey?.firstVisit) {
-          const fv = journey.firstVisit;
-          sessions.push({
-            id: `${orderId}-first`,
-            order_id: orderId,
-            order_number: orderNumber,
-            visit_type: 'first',
-            occurred_at: fv.occurredAt,
-            landing_page: fv.landingPage,
-            referrer_url: fv.referrerUrl,
-            source: fv.source,
-            source_type: fv.sourceType,
-            referral_code: fv.referralCode,
-            utm_source: fv.utmParameters?.source,
-            utm_medium: fv.utmParameters?.medium,
-            utm_campaign: fv.utmParameters?.campaign,
-            utm_content: fv.utmParameters?.content,
-            utm_term: fv.utmParameters?.term
-          });
-        }
-        
-        if (journey?.lastVisit) {
-          const lv = journey.lastVisit;
-          sessions.push({
-            id: `${orderId}-last`,
-            order_id: orderId,
-            order_number: orderNumber,
-            visit_type: 'last',
-            occurred_at: lv.occurredAt,
-            landing_page: lv.landingPage,
-            referrer_url: lv.referrerUrl,
-            source: lv.source,
-            source_type: lv.sourceType,
-            referral_code: lv.referralCode,
-            utm_source: lv.utmParameters?.source,
-            utm_medium: lv.utmParameters?.medium,
-            utm_campaign: lv.utmParameters?.campaign,
-            utm_content: lv.utmParameters?.content,
-            utm_term: lv.utmParameters?.term
-          });
-        }
-      });
-      return sessions;
       
     case 'order_line_items':
       const lineItems = [];
@@ -715,25 +628,6 @@ function transformToTable(resource, data) {
         has_active_inventory: l.hasActiveInventory
       }));
       
-    case 'draft_orders':
-      return data.map(d => ({
-        id: d.id?.split('/').pop(),
-        name: d.name,
-        email: d.email,
-        created_at: d.createdAt,
-        updated_at: d.updatedAt,
-        status: d.status,
-        total_price: parseFloat(d.totalPriceSet?.shopMoney?.amount || 0),
-        subtotal_price: parseFloat(d.subtotalPriceSet?.shopMoney?.amount || 0),
-        total_tax: parseFloat(d.totalTaxSet?.shopMoney?.amount || 0),
-        currency: d.totalPriceSet?.shopMoney?.currencyCode,
-        customer_id: d.customer?.id?.split('/').pop(),
-        customer_email: d.customer?.email,
-        customer_first_name: d.customer?.firstName,
-        customer_last_name: d.customer?.lastName,
-        line_items_count: d.lineItems?.nodes?.length || 0
-      }));
-      
     case 'shop':
       const s = data;
       return [{
@@ -757,10 +651,8 @@ function transformToTable(resource, data) {
 
 // Fetch data from Shopify GraphQL API
 async function fetchShopifyData(storeName, accessToken, resource, maxRecords = 250) {
-  // Map derived tables to their source
   const sourceMap = {
     'order_line_items': 'orders',
-    'order_sessions': 'orders',
     'product_variants': 'products',
     'inventory_levels': 'inventory_items'
   };
@@ -825,19 +717,16 @@ function detectTablesFromSQL(sql) {
   const tables = [];
   const normalizedSQL = sql.toLowerCase();
   
-  // All available tables
   const availableTables = [
-    'orders', 'order_line_items', 'order_sessions',
+    'orders', 'order_line_items',
     'products', 'product_variants',
     'customers',
     'collections',
     'inventory_items', 'inventory_levels',
     'locations',
-    'draft_orders',
     'shop'
   ];
   
-  // Check for table references
   for (const table of availableTables) {
     const patterns = [
       new RegExp(`\\bfrom\\s+${table}\\b`, 'i'),
@@ -876,7 +765,6 @@ module.exports = async (req, res) => {
       const storeName = cleanStoreName(credentials.storeName);
       const accessToken = credentials.apiPassword.trim();
       
-      // Test connection with GraphQL
       try {
         const testQuery = `query { shop { name } }`;
         await axios.post(`https://${storeName}/admin/api/2024-10/graphql.json`, 
@@ -921,67 +809,9 @@ module.exports = async (req, res) => {
       return res.status(200).json({ connected: false });
     }
     
-    // Handle getSchema action - return available tables and columns
-    if (action === 'getSchema') {
-      return res.status(200).json({
-        tables: {
-          orders: {
-            description: 'Orders with UTM/session tracking data',
-            columns: ['id', 'order_number', 'email', 'created_at', 'total_price', 'subtotal_price', 'total_tax', 'total_shipping', 'total_discounts', 'total_refunded', 'currency', 'financial_status', 'fulfillment_status', 'source_name', 'source_identifier', 'days_to_conversion', 'touchpoints_count', 'first_visit_at', 'first_visit_landing_page', 'first_visit_referrer', 'first_visit_source', 'first_visit_source_type', 'first_visit_referral_code', 'first_utm_source', 'first_utm_medium', 'first_utm_campaign', 'first_utm_content', 'first_utm_term', 'last_visit_at', 'last_visit_landing_page', 'last_visit_referrer', 'last_visit_source', 'last_visit_source_type', 'last_utm_source', 'last_utm_medium', 'last_utm_campaign', 'last_utm_content', 'last_utm_term', 'customer_id', 'customer_email', 'shipping_city', 'shipping_country']
-          },
-          order_sessions: {
-            description: 'First/last visit data for JOINs',
-            columns: ['id', 'order_id', 'order_number', 'visit_type', 'occurred_at', 'landing_page', 'referrer_url', 'source', 'source_type', 'referral_code', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']
-          },
-          order_line_items: {
-            description: 'Individual items in orders',
-            columns: ['id', 'order_id', 'order_number', 'title', 'quantity', 'sku', 'vendor', 'unit_price', 'discounted_price', 'variant_id', 'variant_title', 'product_id', 'product_title']
-          },
-          products: {
-            description: 'Product catalog',
-            columns: ['id', 'title', 'handle', 'description', 'vendor', 'product_type', 'tags', 'status', 'created_at', 'updated_at', 'total_inventory', 'min_price', 'max_price', 'currency', 'image_url', 'variants_count']
-          },
-          product_variants: {
-            description: 'Product variants with pricing and inventory',
-            columns: ['id', 'product_id', 'product_title', 'title', 'sku', 'barcode', 'price', 'compare_at_price', 'inventory_quantity', 'available_for_sale', 'weight', 'weight_unit', 'options']
-          },
-          customers: {
-            description: 'Customer profiles and addresses',
-            columns: ['id', 'email', 'first_name', 'last_name', 'full_name', 'phone', 'created_at', 'orders_count', 'total_spent', 'currency', 'city', 'province', 'country', 'zip']
-          },
-          collections: {
-            description: 'Product collections/categories',
-            columns: ['id', 'title', 'handle', 'description', 'sort_order', 'products_count', 'updated_at', 'image_url']
-          },
-          inventory_items: {
-            description: 'Inventory tracking items',
-            columns: ['id', 'sku', 'tracked', 'created_at', 'country_of_origin', 'variant_id', 'product_title']
-          },
-          inventory_levels: {
-            description: 'Stock levels per location',
-            columns: ['id', 'inventory_item_id', 'sku', 'location_id', 'location_name', 'available', 'product_title']
-          },
-          locations: {
-            description: 'Store locations/warehouses',
-            columns: ['id', 'name', 'address1', 'city', 'province', 'country', 'zip', 'is_active', 'fulfills_online_orders']
-          },
-          draft_orders: {
-            description: 'Unpaid draft orders',
-            columns: ['id', 'name', 'email', 'created_at', 'status', 'total_price', 'customer_email']
-          },
-          shop: {
-            description: 'Store settings and info',
-            columns: ['id', 'name', 'email', 'myshopify_domain', 'domain', 'currency', 'plan_name']
-          }
-        },
-        functions: ['SHA2', 'MD5', 'LOWER', 'UPPER', 'CONCAT', 'SUBSTRING', 'TRIM', 'LENGTH', 'NOW', 'DATE', 'YEAR', 'MONTH', 'DAY', 'COALESCE', 'IFNULL', 'NULLIF', 'CAST', 'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'DISTINCT', 'GROUP BY', 'ORDER BY', 'HAVING', 'LIMIT', 'OFFSET', 'JOIN', 'LEFT JOIN', 'INNER JOIN', 'WHERE', 'AND', 'OR', 'IN', 'NOT IN', 'LIKE', 'BETWEEN', 'IS NULL', 'IS NOT NULL', 'CASE WHEN', 'AS']
-      });
-    }
-    
     // Handle SQL query
     if (!sql) return res.status(400).json({ error: 'Missing SQL query' });
     
-    // Get credentials from session
     let storeName, accessToken;
     const session = decodeSession(cookies.shopify_session);
     if (session?.storeName && session?.accessToken) {
@@ -994,16 +824,14 @@ module.exports = async (req, res) => {
       return res.status(401).json({ error: 'Not connected. Please connect your store first.' });
     }
     
-    // Detect which tables are needed
     const tables = detectTablesFromSQL(sql);
     
     if (tables.length === 0) {
       return res.status(400).json({ 
-        error: 'No valid table found in query. Available tables: orders, order_sessions, order_line_items, products, product_variants, customers, collections, inventory_items, inventory_levels, locations, draft_orders, shop'
+        error: 'No valid table found. Available: orders, order_line_items, products, product_variants, customers, collections, inventory_items, inventory_levels, locations, shop'
       });
     }
     
-    // Fetch data for each table
     const tableData = {};
     for (const table of tables) {
       try {
@@ -1014,14 +842,12 @@ module.exports = async (req, res) => {
       }
     }
     
-    // Create AlaSQL tables and load data
     for (const [tableName, data] of Object.entries(tableData)) {
       alasql(`DROP TABLE IF EXISTS ${tableName}`);
       alasql(`CREATE TABLE ${tableName}`);
       alasql.tables[tableName].data = data;
     }
     
-    // Execute the SQL query
     let results;
     try {
       results = alasql(sql);
@@ -1033,7 +859,6 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: `SQL Error: ${errorMsg}` });
     }
     
-    // Ensure results is an array
     if (!Array.isArray(results)) {
       results = [results];
     }
