@@ -172,7 +172,7 @@ const graphqlQueries = {
           customerJourneySummary {
             ready
             daysToConversion
-            momentsCount
+            momentsCount { count }
             firstVisit {
               occurredAt
               landingPage
@@ -439,7 +439,7 @@ function transformToTable(resource, data) {
           // Journey Summary
           journey_ready: journey?.ready,
           days_to_conversion: journey?.daysToConversion,
-          touchpoints_count: journey?.momentsCount,
+          touchpoints_count: journey?.momentsCount?.count,
           
           // First Visit (Acquisition)
           first_visit_at: firstVisit?.occurredAt,
