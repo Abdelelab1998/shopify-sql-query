@@ -13,11 +13,6 @@
     .mono { font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .animate-spin { animation: spin 1s linear infinite; }
-    .syntax-keyword { color: #7c3aed; font-weight: 600; }
-    .syntax-function { color: #2563eb; }
-    .syntax-table { color: #059669; }
-    .syntax-string { color: #b45309; }
-    .syntax-number { color: #dc2626; }
   </style>
 </head>
 <body class="bg-gray-50">
@@ -30,7 +25,7 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    // Icon components
+    // Icons
     const ShopifyLogo = (props) => (
       <svg {...props} viewBox="0 0 109.5 124.5" xmlns="http://www.w3.org/2000/svg">
         <path fill="#95BF47" d="M95.9,23.9c-0.1-0.6-0.6-1-1.1-1c-0.5,0-9.3-0.2-9.3-0.2s-7.4-7.2-8.1-7.9c-0.7-0.7-2.2-0.5-2.7-0.3 c0,0-1.4,0.4-3.7,1.1c-0.4-1.3-1-2.8-1.8-4.4c-2.6-5-6.5-7.7-11.1-7.7c0,0,0,0,0,0c-0.3,0-0.6,0-1,0.1c-0.1-0.2-0.3-0.3-0.4-0.5 c-2-2.2-4.6-3.2-7.7-3.1c-6,0.2-12,4.5-16.8,12.2c-3.4,5.4-6,12.2-6.8,17.5c-6.9,2.1-11.7,3.6-11.8,3.7c-3.5,1.1-3.6,1.2-4,4.5 c-0.3,2.5-9.5,73-9.5,73l76.4,13.2l33.1-8.2C109.5,115.8,96,24.5,95.9,23.9z M67.2,16.8c-1.8,0.5-3.8,1.2-5.9,1.8 c0-3-0.4-7.3-1.8-10.9C64,8.6,66.2,13.7,67.2,16.8z M57.2,19.9c-4,1.2-8.4,2.6-12.8,3.9c1.2-4.7,3.6-9.4,6.4-12.5 c1.1-1.1,2.6-2.4,4.3-3.2C56.9,11.6,57.3,16.5,57.2,19.9z M49.1,4c1.4,0,2.6,0.3,3.6,0.9C51.1,5.8,49.5,7,48,8.6 c-3.8,4.1-6.7,10.5-7.9,16.6c-3.6,1.1-7.2,2.2-10.5,3.2C31.7,18.8,39.8,4.3,49.1,4z"/>
@@ -39,12 +34,7 @@
       </svg>
     );
 
-    const TableIcon = (props) => (
-      <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/>
-      </svg>
-    );
-
+    const TableIcon = (props) => (<svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>);
     const Search = (props) => (<svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>);
     const AlertCircle = (props) => (<svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>);
     const Book = (props) => (<svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path></svg>);
@@ -55,38 +45,225 @@
     const ChevronLeft = (props) => (<svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>);
     const ChevronRight = (props) => (<svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>);
 
-    // Schema definition for autocomplete - NOW WITH UTM/SESSION DATA
+    // Complete schema with descriptions
     const schema = {
       tables: {
-        orders: ['id', 'order_number', 'email', 'created_at', 'updated_at', 'total_price', 'subtotal_price', 'total_tax', 'total_shipping', 'total_discounts', 'total_refunded', 'currency', 'financial_status', 'fulfillment_status', 'note', 'tags', 'source_name', 'source_identifier', 'days_to_conversion', 'touchpoints_count', 'first_visit_at', 'first_visit_landing_page', 'first_visit_referrer', 'first_visit_source', 'first_visit_source_type', 'first_visit_referral_code', 'first_utm_source', 'first_utm_medium', 'first_utm_campaign', 'first_utm_content', 'first_utm_term', 'last_visit_at', 'last_visit_landing_page', 'last_visit_referrer', 'last_visit_source', 'last_visit_source_type', 'last_utm_source', 'last_utm_medium', 'last_utm_campaign', 'last_utm_content', 'last_utm_term', 'customer_id', 'customer_email', 'customer_first_name', 'customer_last_name', 'shipping_address1', 'shipping_city', 'shipping_province', 'shipping_country', 'shipping_zip', 'line_items_count'],
-        order_sessions: ['id', 'order_id', 'order_number', 'visit_type', 'occurred_at', 'landing_page', 'referrer_url', 'source', 'source_type', 'referral_code', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'],
-        order_line_items: ['id', 'order_id', 'order_number', 'title', 'quantity', 'sku', 'vendor', 'unit_price', 'discounted_price', 'variant_id', 'variant_title', 'product_id', 'product_title'],
-        products: ['id', 'title', 'handle', 'description', 'vendor', 'product_type', 'tags', 'status', 'created_at', 'updated_at', 'published_at', 'total_inventory', 'min_price', 'max_price', 'currency', 'image_url', 'variants_count'],
-        product_variants: ['id', 'product_id', 'product_title', 'title', 'sku', 'barcode', 'price', 'compare_at_price', 'inventory_quantity', 'available_for_sale', 'weight', 'weight_unit', 'options'],
-        customers: ['id', 'email', 'first_name', 'last_name', 'full_name', 'phone', 'created_at', 'updated_at', 'note', 'tags', 'state', 'orders_count', 'total_spent', 'currency', 'city', 'province', 'country', 'zip'],
-        collections: ['id', 'title', 'handle', 'description', 'sort_order', 'products_count', 'updated_at', 'image_url'],
-        inventory_items: ['id', 'sku', 'tracked', 'created_at', 'updated_at', 'country_of_origin', 'variant_id', 'product_title'],
-        inventory_levels: ['id', 'inventory_item_id', 'sku', 'location_id', 'location_name', 'available', 'product_title', 'variant_title'],
-        locations: ['id', 'name', 'address1', 'city', 'province', 'country', 'zip', 'is_active', 'fulfills_online_orders'],
-        draft_orders: ['id', 'name', 'email', 'created_at', 'status', 'total_price', 'customer_email'],
-        shop: ['id', 'name', 'email', 'myshopify_domain', 'domain', 'currency', 'plan_name']
+        orders: {
+          description: 'All orders placed in your store, including financial data, customer info, shipping details, and UTM/session tracking for attribution analysis.',
+          columns: {
+            id: 'Unique order ID',
+            order_number: 'Order number (e.g., #1001)',
+            email: 'Customer email on the order',
+            created_at: 'When the order was placed',
+            updated_at: 'Last modification time',
+            cancelled_at: 'Cancellation time (null if not cancelled)',
+            closed_at: 'When order was closed',
+            processed_at: 'When payment was processed',
+            total_price: 'Total amount charged',
+            subtotal_price: 'Subtotal before tax/shipping',
+            total_tax: 'Total tax amount',
+            total_shipping: 'Shipping cost',
+            total_discounts: 'Total discounts applied',
+            total_refunded: 'Amount refunded',
+            currency: 'Currency code (USD, EUR, etc.)',
+            financial_status: 'PAID, PENDING, REFUNDED, etc.',
+            fulfillment_status: 'FULFILLED, UNFULFILLED, PARTIAL',
+            note: 'Order notes',
+            tags: 'Comma-separated tags',
+            source_name: 'Order source (web, pos, mobile)',
+            line_items_count: 'Number of items in order',
+            days_to_conversion: 'Days from first visit to purchase',
+            touchpoints_count: 'Number of visits before purchase',
+            first_visit_at: 'Timestamp of first visit',
+            first_landing_page: 'First page URL visited',
+            first_referrer: 'Referrer URL of first visit',
+            first_source: 'Traffic source (google, facebook)',
+            first_source_type: 'Channel: SEARCH, SOCIAL, DIRECT, etc.',
+            first_referral_code: 'Affiliate/referral code',
+            first_utm_source: 'UTM source parameter',
+            first_utm_medium: 'UTM medium parameter',
+            first_utm_campaign: 'UTM campaign name',
+            first_utm_content: 'UTM content parameter',
+            first_utm_term: 'UTM search term',
+            last_visit_at: 'Timestamp of converting visit',
+            last_landing_page: 'Page URL of converting visit',
+            last_referrer: 'Referrer of converting visit',
+            last_source: 'Traffic source of converting visit',
+            last_source_type: 'Channel of converting visit',
+            last_utm_source: 'UTM source of converting visit',
+            last_utm_medium: 'UTM medium of converting visit',
+            last_utm_campaign: 'UTM campaign of converting visit',
+            customer_id: 'Customer ID',
+            customer_email: 'Customer email',
+            customer_first_name: 'Customer first name',
+            customer_last_name: 'Customer last name',
+            shipping_city: 'Shipping city',
+            shipping_province: 'Shipping state/province',
+            shipping_country: 'Shipping country',
+            shipping_zip: 'Shipping postal code'
+          }
+        },
+        order_line_items: {
+          description: 'Individual line items within orders. Each row represents one product/variant in an order. Use JOIN with orders table for full details.',
+          columns: {
+            id: 'Line item ID',
+            order_id: 'Parent order ID (for JOINs)',
+            order_number: 'Order number',
+            title: 'Product title',
+            quantity: 'Quantity ordered',
+            sku: 'SKU code',
+            vendor: 'Product vendor',
+            unit_price: 'Price per unit',
+            discounted_price: 'Price after discounts',
+            variant_id: 'Product variant ID',
+            variant_title: 'Variant name (e.g., "Large / Blue")',
+            product_id: 'Product ID',
+            product_title: 'Product title'
+          }
+        },
+        products: {
+          description: 'Product catalog with inventory, pricing, and metadata. Each row is one product (not variant).',
+          columns: {
+            id: 'Product ID',
+            title: 'Product title',
+            handle: 'URL handle (slug)',
+            description: 'Product description text',
+            vendor: 'Vendor/brand name',
+            product_type: 'Product type/category',
+            tags: 'Comma-separated tags',
+            status: 'ACTIVE, DRAFT, ARCHIVED',
+            created_at: 'Creation date',
+            updated_at: 'Last update date',
+            published_at: 'Publication date',
+            total_inventory: 'Total stock across all variants',
+            min_price: 'Lowest variant price',
+            max_price: 'Highest variant price',
+            currency: 'Price currency',
+            image_url: 'Featured image URL',
+            variants_count: 'Number of variants'
+          }
+        },
+        product_variants: {
+          description: 'Individual product variants with SKU, pricing, and inventory. Each variant is a specific size/color/option combination.',
+          columns: {
+            id: 'Variant ID',
+            product_id: 'Parent product ID (for JOINs)',
+            product_title: 'Product title',
+            title: 'Variant title (e.g., "Large / Blue")',
+            sku: 'SKU code',
+            barcode: 'Barcode/UPC',
+            price: 'Variant price',
+            compare_at_price: 'Original price (for sales)',
+            inventory_quantity: 'Stock quantity',
+            available_for_sale: 'Is available for purchase',
+            weight: 'Weight value',
+            weight_unit: 'Weight unit (kg, lb, etc.)',
+            options: 'Option values (e.g., "Size: L, Color: Blue")'
+          }
+        },
+        customers: {
+          description: 'Customer profiles with contact info, address, and lifetime value metrics.',
+          columns: {
+            id: 'Customer ID',
+            email: 'Email address',
+            first_name: 'First name',
+            last_name: 'Last name',
+            full_name: 'Full name combined',
+            phone: 'Phone number',
+            created_at: 'Account creation date',
+            updated_at: 'Last update date',
+            note: 'Internal notes',
+            tags: 'Comma-separated tags',
+            state: 'Account state (ENABLED, DISABLED)',
+            tax_exempt: 'Is tax exempt',
+            verified_email: 'Email verified',
+            orders_count: 'Total number of orders',
+            total_spent: 'Lifetime spend amount',
+            currency: 'Spend currency',
+            city: 'Default address city',
+            province: 'Default address state/province',
+            country: 'Default address country',
+            zip: 'Default address postal code',
+            company: 'Company name'
+          }
+        },
+        collections: {
+          description: 'Product collections/categories for organizing your catalog.',
+          columns: {
+            id: 'Collection ID',
+            title: 'Collection title',
+            handle: 'URL handle (slug)',
+            description: 'Collection description',
+            sort_order: 'Product sort order',
+            products_count: 'Number of products',
+            updated_at: 'Last update date',
+            image_url: 'Collection image URL',
+            seo_title: 'SEO title',
+            seo_description: 'SEO description'
+          }
+        },
+        inventory_items: {
+          description: 'Inventory tracking items linked to product variants. Contains origin and customs info.',
+          columns: {
+            id: 'Inventory item ID',
+            sku: 'SKU code',
+            tracked: 'Is inventory tracked',
+            created_at: 'Creation date',
+            updated_at: 'Last update',
+            country_of_origin: 'Country of origin code',
+            province_of_origin: 'Province of origin',
+            hs_code: 'Harmonized System code (customs)',
+            variant_id: 'Linked variant ID',
+            product_title: 'Product title'
+          }
+        },
+        inventory_levels: {
+          description: 'Stock quantities per location. Shows available inventory at each warehouse/store.',
+          columns: {
+            id: 'Inventory level ID',
+            inventory_item_id: 'Inventory item ID (for JOINs)',
+            sku: 'SKU code',
+            location_id: 'Location ID',
+            location_name: 'Location/warehouse name',
+            available: 'Available quantity',
+            product_title: 'Product title',
+            variant_title: 'Variant title'
+          }
+        },
+        locations: {
+          description: 'Physical locations (warehouses, stores, fulfillment centers).',
+          columns: {
+            id: 'Location ID',
+            name: 'Location name',
+            address1: 'Street address',
+            city: 'City',
+            province: 'State/province',
+            country: 'Country',
+            zip: 'Postal code',
+            is_active: 'Is location active',
+            fulfills_online_orders: 'Fulfills online orders',
+            has_active_inventory: 'Has active inventory'
+          }
+        },
+        shop: {
+          description: 'Store settings and configuration. Returns one row with shop details.',
+          columns: {
+            id: 'Shop ID',
+            name: 'Store name',
+            email: 'Store email',
+            myshopify_domain: 'Myshopify domain',
+            domain: 'Primary domain URL',
+            currency: 'Store currency',
+            weight_unit: 'Default weight unit',
+            timezone: 'Store timezone',
+            plan_name: 'Shopify plan name',
+            is_plus: 'Is Shopify Plus'
+          }
+        }
       },
-      keywords: ['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'ORDER BY', 'GROUP BY', 'HAVING', 'LIMIT', 'OFFSET', 'JOIN', 'LEFT JOIN', 'INNER JOIN', 'ON', 'AS', 'DISTINCT', 'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'IN', 'NOT IN', 'LIKE', 'NOT LIKE', 'BETWEEN', 'IS NULL', 'IS NOT NULL', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'ASC', 'DESC', 'UNION', 'ALL'],
-      functions: ['SHA2', 'MD5', 'LOWER', 'UPPER', 'CONCAT', 'SUBSTRING', 'TRIM', 'LENGTH', 'NOW', 'DATE', 'YEAR', 'MONTH', 'DAY', 'COALESCE', 'IFNULL', 'NULLIF', 'CAST', 'ROUND', 'ABS', 'FLOOR', 'CEIL']
+      keywords: ['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'ORDER BY', 'GROUP BY', 'HAVING', 'LIMIT', 'OFFSET', 'JOIN', 'LEFT JOIN', 'INNER JOIN', 'ON', 'AS', 'DISTINCT', 'COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'IN', 'NOT IN', 'LIKE', 'BETWEEN', 'IS NULL', 'IS NOT NULL', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'ASC', 'DESC'],
+      functions: ['SHA2', 'MD5', 'LOWER', 'UPPER', 'CONCAT', 'SUBSTRING', 'TRIM', 'LENGTH', 'NOW', 'DATE', 'YEAR', 'MONTH', 'DAY', 'COALESCE', 'IFNULL', 'NULLIF', 'CAST', 'ROUND', 'ABS']
     };
-
-    const exampleQueries = [
-      { sql: 'SELECT * FROM orders WHERE total_price > 100 ORDER BY created_at DESC LIMIT 50', desc: 'Recent high-value orders' },
-      { sql: 'SELECT SHA2(LOWER(email), 256) AS email_hashed, total_spent FROM customers', desc: 'Hashed customer emails' },
-      { sql: 'SELECT first_utm_campaign AS campaign, first_utm_source AS source, COUNT(*) AS orders, SUM(total_price) AS revenue FROM orders WHERE first_utm_campaign IS NOT NULL GROUP BY first_utm_campaign, first_utm_source ORDER BY revenue DESC', desc: 'Campaign performance report' },
-      { sql: 'SELECT first_visit_source_type AS channel, COUNT(*) AS orders, SUM(total_price) AS revenue, AVG(days_to_conversion) AS avg_days FROM orders GROUP BY first_visit_source_type ORDER BY revenue DESC', desc: 'Revenue by acquisition channel' },
-      { sql: 'SELECT first_visit_landing_page AS page, COUNT(*) AS conversions, SUM(total_price) AS revenue FROM orders WHERE first_visit_landing_page IS NOT NULL GROUP BY first_visit_landing_page ORDER BY revenue DESC LIMIT 20', desc: 'Top converting landing pages' },
-      { sql: 'SELECT SHA2(LOWER(customer_email), 256) AS customer_hash, first_utm_source, first_utm_campaign, total_price, days_to_conversion FROM orders WHERE first_utm_source IS NOT NULL', desc: 'Hashed attribution data' },
-      { sql: 'SELECT DATE(created_at) AS date, COUNT(*) AS orders, SUM(total_price) AS revenue FROM orders GROUP BY DATE(created_at) ORDER BY date DESC', desc: 'Daily sales report' },
-      { sql: 'SELECT p.title, pv.sku, pv.price, pv.inventory_quantity FROM products p JOIN product_variants pv ON p.id = pv.product_id WHERE pv.inventory_quantity < 10', desc: 'Low stock variants' },
-      { sql: 'SELECT * FROM order_sessions WHERE utm_campaign IS NOT NULL ORDER BY occurred_at DESC', desc: 'All sessions with UTM data' },
-      { sql: 'SELECT order_number, total_price, first_utm_source AS acquisition, last_utm_source AS conversion, CASE WHEN first_utm_source = last_utm_source THEN "Single" ELSE "Multi" END AS touch FROM orders WHERE first_utm_source IS NOT NULL', desc: 'Multi-touch attribution' }
-    ];
 
     const ShopifyQueryApp = () => {
       const [sqlQuery, setSqlQuery] = useState('');
@@ -107,6 +284,7 @@
       const [pageSize, setPageSize] = useState(10);
       const [showExportMenu, setShowExportMenu] = useState(false);
       const [queryTime, setQueryTime] = useState(null);
+      const [selectedDocTable, setSelectedDocTable] = useState('orders');
       const textareaRef = useRef(null);
 
       useEffect(() => { checkSession(); }, []);
@@ -120,11 +298,8 @@
             body: JSON.stringify({ action: 'checkSession' })
           });
           const data = await response.json();
-          if (data.connected) {
-            setConnected(true);
-            setStoreName(data.storeName);
-          }
-        } catch (e) { console.warn('Session check failed:', e); }
+          if (data.connected) { setConnected(true); setStoreName(data.storeName); }
+        } catch (e) {}
         setIsLoading(false);
       };
 
@@ -133,58 +308,31 @@
 
       const updateSuggestions = (query, cursorPos) => {
         if (!query.trim()) { setShowSuggestions(false); return; }
-
         const beforeCursor = query.substring(0, cursorPos);
         const words = beforeCursor.split(/[\s,()]+/);
         const currentWord = words[words.length - 1].toLowerCase();
         const prevWord = (words[words.length - 2] || '').toLowerCase();
-        
         if (currentWord.length < 1) { setShowSuggestions(false); return; }
 
         let newSuggestions = [];
+        const tableNames = Object.keys(schema.tables);
 
-        // Context-aware suggestions
-        if (prevWord === 'from' || prevWord === 'join' || prevWord === 'into') {
-          // Suggest tables
-          newSuggestions = Object.keys(schema.tables)
-            .filter(t => t.startsWith(currentWord))
-            .map(t => ({ type: 'table', value: t, desc: `Table: ${schema.tables[t].length} columns` }));
-        } else if (prevWord === 'by' || currentWord.includes('.')) {
-          // Suggest columns after ORDER BY, GROUP BY, or table.column
-          const tableName = currentWord.includes('.') ? currentWord.split('.')[0] : null;
-          const colPrefix = currentWord.includes('.') ? currentWord.split('.')[1] : currentWord;
-          
-          if (tableName && schema.tables[tableName]) {
-            newSuggestions = schema.tables[tableName]
-              .filter(c => c.startsWith(colPrefix))
-              .map(c => ({ type: 'column', value: `${tableName}.${c}`, desc: `Column in ${tableName}` }));
-          } else {
-            // Suggest all columns from detected tables
-            const detectedTables = Object.keys(schema.tables).filter(t => 
-              query.toLowerCase().includes(`from ${t}`) || query.toLowerCase().includes(`join ${t}`)
-            );
-            detectedTables.forEach(t => {
-              schema.tables[t].filter(c => c.startsWith(currentWord))
-                .forEach(c => newSuggestions.push({ type: 'column', value: c, desc: `Column in ${t}` }));
-            });
-          }
+        if (prevWord === 'from' || prevWord === 'join') {
+          newSuggestions = tableNames.filter(t => t.startsWith(currentWord))
+            .map(t => ({ type: 'table', value: t, desc: schema.tables[t].description.substring(0, 50) + '...' }));
         } else {
-          // General suggestions: keywords, functions, tables
           schema.keywords.filter(k => k.toLowerCase().startsWith(currentWord))
             .forEach(k => newSuggestions.push({ type: 'keyword', value: k, desc: 'SQL keyword' }));
-          
           schema.functions.filter(f => f.toLowerCase().startsWith(currentWord))
             .forEach(f => newSuggestions.push({ type: 'function', value: f + '(', desc: 'SQL function' }));
-          
-          Object.keys(schema.tables).filter(t => t.startsWith(currentWord))
+          tableNames.filter(t => t.startsWith(currentWord))
             .forEach(t => newSuggestions.push({ type: 'table', value: t, desc: 'Table' }));
-        }
-
-        // Add query templates
-        if (currentWord.length > 2) {
-          exampleQueries.filter(q => 
-            q.sql.toLowerCase().includes(currentWord) || q.desc.toLowerCase().includes(currentWord)
-          ).slice(0, 3).forEach(q => newSuggestions.push({ type: 'template', value: q.sql, desc: q.desc }));
+          
+          const detectedTables = tableNames.filter(t => query.toLowerCase().includes(`from ${t}`) || query.toLowerCase().includes(`join ${t}`));
+          detectedTables.forEach(t => {
+            Object.keys(schema.tables[t].columns).filter(c => c.startsWith(currentWord))
+              .forEach(c => newSuggestions.push({ type: 'column', value: c, desc: schema.tables[t].columns[c] }));
+          });
         }
 
         const unique = newSuggestions.filter((s, i, arr) => arr.findIndex(t => t.value === s.value) === i);
@@ -195,79 +343,48 @@
 
       const handleConnect = async () => {
         if (!connectionForm.storeName || !connectionForm.apiPassword) { alert('Please fill in all fields'); return; }
-        setConnectLoading(true);
-        setError('');
+        setConnectLoading(true); setError('');
         try {
           const response = await fetch('/api/query', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
             body: JSON.stringify({ action: 'connect', credentials: connectionForm })
           });
           const data = await response.json();
-          if (!response.ok) throw new Error(data.error || 'Connection failed');
-          setConnected(true);
-          setStoreName(data.storeName);
-          setShowConnect(false);
+          if (!response.ok) throw new Error(data.error);
+          setConnected(true); setStoreName(data.storeName); setShowConnect(false);
           setConnectionForm({ storeName: '', apiPassword: '' });
         } catch (err) { setError(err.message); }
         setConnectLoading(false);
       };
 
       const handleDisconnect = async () => {
-        try {
-          await fetch('/api/query', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ action: 'disconnect' })
-          });
-        } catch (e) {}
-        setConnected(false);
-        setStoreName('');
-        setAllResults(null);
+        try { await fetch('/api/query', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ action: 'disconnect' }) }); } catch (e) {}
+        setConnected(false); setStoreName(''); setAllResults(null);
       };
 
       const executeQuery = async () => {
         if (!connected) { setError('Please connect your store first'); return; }
         if (!sqlQuery.trim()) { setError('Query cannot be empty'); return; }
-
-        setLoading(true);
-        setError('');
+        setLoading(true); setError('');
         const startTime = Date.now();
-        
         try {
-          const response = await fetch('/api/query', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ sql: sqlQuery })
-          });
+          const response = await fetch('/api/query', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ sql: sqlQuery }) });
           const data = await response.json();
-          if (!response.ok) {
-            if (response.status === 401) { setConnected(false); setStoreName(''); }
-            throw new Error(data.error || 'Query failed');
-          }
-          setAllResults(data.results);
-          setCurrentPage(1);
-          setQueryTime(Date.now() - startTime);
+          if (!response.ok) { if (response.status === 401) { setConnected(false); setStoreName(''); } throw new Error(data.error); }
+          setAllResults(data.results); setCurrentPage(1); setQueryTime(Date.now() - startTime);
         } catch (err) { setError(err.message); setAllResults(null); }
         setLoading(false);
       };
 
       const handleSuggestionClick = (suggestion) => {
-        if (suggestion.type === 'template') {
-          setSqlQuery(suggestion.value);
-        } else {
-          const textarea = textareaRef.current;
-          const cursorPos = textarea.selectionStart;
-          const beforeCursor = sqlQuery.substring(0, cursorPos);
-          const afterCursor = sqlQuery.substring(cursorPos);
-          const words = beforeCursor.split(/[\s,()]+/);
-          const currentWordStart = beforeCursor.lastIndexOf(words[words.length - 1]);
-          const newQuery = sqlQuery.substring(0, currentWordStart) + suggestion.value + ' ' + afterCursor.trimStart();
-          setSqlQuery(newQuery);
-        }
+        const textarea = textareaRef.current;
+        const cursorPos = textarea.selectionStart;
+        const beforeCursor = sqlQuery.substring(0, cursorPos);
+        const afterCursor = sqlQuery.substring(cursorPos);
+        const words = beforeCursor.split(/[\s,()]+/);
+        const currentWordStart = beforeCursor.lastIndexOf(words[words.length - 1]);
+        const newQuery = sqlQuery.substring(0, currentWordStart) + suggestion.value + ' ' + afterCursor.trimStart();
+        setSqlQuery(newQuery);
         setShowSuggestions(false);
       };
 
@@ -277,39 +394,27 @@
           else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveSuggestionIndex(i => i > 0 ? i - 1 : suggestions.length - 1); }
           else if (e.key === 'Tab' || (e.key === 'Enter' && !e.metaKey && !e.ctrlKey)) {
             if (suggestions[activeSuggestionIndex]) { e.preventDefault(); handleSuggestionClick(suggestions[activeSuggestionIndex]); }
-          }
-          else if (e.key === 'Escape') { setShowSuggestions(false); }
+          } else if (e.key === 'Escape') { setShowSuggestions(false); }
         }
         if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); executeQuery(); }
       };
 
-      const handleQueryChange = (e) => {
-        const value = e.target.value;
-        setSqlQuery(value);
-        updateSuggestions(value, e.target.selectionStart);
-      };
+      const handleQueryChange = (e) => { const value = e.target.value; setSqlQuery(value); updateSuggestions(value, e.target.selectionStart); };
 
       // Export functions
       const exportToCSV = () => {
         if (!allResults?.length) return;
         const cols = Object.keys(allResults[0]);
-        const csv = [cols.join(','), ...allResults.map(r => cols.map(c => {
-          const v = r[c];
-          return typeof v === 'string' && (v.includes(',') || v.includes('"')) ? `"${v.replace(/"/g, '""')}"` : v;
-        }).join(','))].join('\n');
+        const csv = [cols.join(','), ...allResults.map(r => cols.map(c => { const v = r[c]; return typeof v === 'string' && (v.includes(',') || v.includes('"')) ? `"${v.replace(/"/g, '""')}"` : v; }).join(','))].join('\n');
         const blob = new Blob([csv], { type: 'text/csv' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `export_${Date.now()}.csv`;
-        link.click();
+        const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `export_${Date.now()}.csv`; link.click();
         setShowExportMenu(false);
       };
 
       const exportToXLSX = () => {
         if (!allResults?.length) return;
         const ws = XLSX.utils.json_to_sheet(allResults);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Results');
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Results');
         XLSX.writeFile(wb, `export_${Date.now()}.xlsx`);
         setShowExportMenu(false);
       };
@@ -319,17 +424,9 @@
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         const cols = Object.keys(allResults[0]);
-        doc.setFontSize(14);
-        doc.text('Query Results', 14, 15);
-        doc.setFontSize(8);
-        doc.text(`${allResults.length} rows | ${new Date().toLocaleString()}`, 14, 22);
-        doc.autoTable({
-          head: [cols],
-          body: allResults.map(r => cols.map(c => r[c])),
-          startY: 28,
-          styles: { fontSize: 7 },
-          headStyles: { fillColor: [20, 184, 166] }
-        });
+        doc.setFontSize(14); doc.text('Query Results', 14, 15);
+        doc.setFontSize(8); doc.text(`${allResults.length} rows | ${new Date().toLocaleString()}`, 14, 22);
+        doc.autoTable({ head: [cols], body: allResults.map(r => cols.map(c => r[c])), startY: 28, styles: { fontSize: 7 }, headStyles: { fillColor: [20, 184, 166] } });
         doc.save(`export_${Date.now()}.pdf`);
         setShowExportMenu(false);
       };
@@ -343,25 +440,17 @@
           return <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${colors[val] || 'bg-gray-100 text-gray-700'}`}>{val}</span>;
         }
         if (typeof val === 'boolean') return val ? '✓' : '✗';
-        return String(val).length > 100 ? String(val).substring(0, 100) + '...' : val;
+        return String(val).length > 80 ? String(val).substring(0, 80) + '...' : val;
       };
 
       const renderTable = () => {
-        if (!paginatedResults?.length) return (
-          <div className="text-center py-16"><Database className="w-12 h-12 mx-auto mb-3 text-gray-300" /><p className="text-sm text-gray-600">No results</p></div>
-        );
+        if (!paginatedResults?.length) return (<div className="text-center py-16"><Database className="w-12 h-12 mx-auto mb-3 text-gray-300" /><p className="text-sm text-gray-600">No results</p></div>);
         const cols = Object.keys(paginatedResults[0]);
         return (
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50"><tr className="border-b border-gray-200">
-                {cols.map(c => <th key={c} className="text-left py-3 px-4 text-xs font-semibold text-gray-700 uppercase">{c.replace(/_/g, ' ')}</th>)}
-              </tr></thead>
-              <tbody>{paginatedResults.map((r, i) => (
-                <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
-                  {cols.map(c => <td key={c} className="py-3 px-4 text-sm text-gray-900">{formatCell(c, r[c])}</td>)}
-                </tr>
-              ))}</tbody>
+              <thead className="bg-gray-50"><tr className="border-b border-gray-200">{cols.map(c => <th key={c} className="text-left py-3 px-4 text-xs font-semibold text-gray-700 uppercase whitespace-nowrap">{c.replace(/_/g, ' ')}</th>)}</tr></thead>
+              <tbody>{paginatedResults.map((r, i) => (<tr key={i} className="border-b border-gray-100 hover:bg-gray-50">{cols.map(c => <td key={c} className="py-3 px-4 text-sm text-gray-900 whitespace-nowrap">{formatCell(c, r[c])}</td>)}</tr>))}</tbody>
             </table>
           </div>
         );
@@ -373,8 +462,7 @@
           <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-gray-50">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <span>Show</span>
-              <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-                className="border border-gray-300 rounded px-2 py-1 text-sm">
+              <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1); }} className="border border-gray-300 rounded px-2 py-1 text-sm">
                 <option value={10}>10</option><option value={50}>50</option><option value={100}>100</option>
               </select>
               <span>of {allResults.length}</span>
@@ -388,11 +476,7 @@
         );
       };
 
-      if (isLoading) return (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="w-8 h-8 border-4 border-gray-200 border-t-teal-600 rounded-full animate-spin"></div>
-        </div>
-      );
+      if (isLoading) return (<div className="min-h-screen flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-teal-600 rounded-full animate-spin"></div></div>);
 
       return (
         <div className="min-h-screen bg-gray-50">
@@ -400,9 +484,7 @@
           <div className="bg-white border-b border-gray-300">
             <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <ShopifyLogo className="w-7 h-8" />
-                <span className="text-gray-400">→</span>
-                <TableIcon className="w-6 h-6 text-gray-700" />
+                <ShopifyLogo className="w-7 h-8" /><span className="text-gray-400">→</span><TableIcon className="w-6 h-6 text-gray-700" />
                 <h1 className="text-xl font-semibold text-gray-900">SQL Query</h1>
               </div>
               <div className="flex items-center gap-2">
@@ -420,7 +502,7 @@
                   </button>
                 )}
                 <button onClick={() => setShowDocs(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50">
-                  <Book className="w-3.5 h-3.5" />Docs
+                  <Book className="w-3.5 h-3.5" />Schema
                 </button>
               </div>
             </div>
@@ -461,52 +543,62 @@
             </div>
           )}
 
-          {/* Docs Modal */}
+          {/* Documentation Modal */}
           {showDocs && (
             <div className="fixed inset-0 bg-black bg-opacity-40 z-50 flex items-center justify-center p-6" onClick={() => setShowDocs(false)}>
-              <div className="bg-white rounded-lg max-w-5xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-                <div className="border-b px-8 py-6 flex items-center justify-between bg-white sticky top-0">
-                  <div>
-                    <h2 className="text-2xl font-semibold">SQL Documentation</h2>
-                    <p className="text-gray-600 text-sm mt-1">Full SQL support with Shopify data</p>
+              <div className="bg-white rounded-lg max-w-5xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex" onClick={e => e.stopPropagation()}>
+                {/* Sidebar */}
+                <div className="w-56 border-r border-gray-200 bg-gray-50 p-4 overflow-y-auto">
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Tables</h3>
+                  {Object.keys(schema.tables).map(table => (
+                    <button key={table} onClick={() => setSelectedDocTable(table)}
+                      className={`w-full text-left px-3 py-2 rounded text-sm mb-1 ${selectedDocTable === table ? 'bg-teal-100 text-teal-800 font-medium' : 'hover:bg-gray-100 text-gray-700'}`}>
+                      {table}
+                    </button>
+                  ))}
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3 mt-6">Functions</h3>
+                  <div className="flex flex-wrap gap-1">
+                    {schema.functions.map(f => (
+                      <span key={f} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs mono">{f}</span>
+                    ))}
                   </div>
-                  <button onClick={() => setShowDocs(false)} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
                 </div>
-                <div className="overflow-y-auto p-8 space-y-8" style={{ maxHeight: 'calc(90vh - 100px)' }}>
-                  <section>
-                    <h3 className="text-lg font-semibold mb-4">Available Tables</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      {Object.entries(schema.tables).map(([name, cols]) => (
-                        <div key={name} className="border rounded-lg p-4 hover:border-teal-300">
-                          <h4 className="font-semibold text-teal-700">{name}</h4>
-                          <p className="text-xs text-gray-500 mt-1 mono">{cols.slice(0, 6).join(', ')}{cols.length > 6 ? '...' : ''}</p>
-                        </div>
-                      ))}
+                
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto">
+                  <div className="border-b px-6 py-4 flex items-center justify-between bg-white sticky top-0">
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-900 mono">{selectedDocTable}</h2>
+                      <p className="text-sm text-gray-600 mt-1">{schema.tables[selectedDocTable].description}</p>
                     </div>
-                  </section>
+                    <button onClick={() => setShowDocs(false)} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
+                  </div>
                   
-                  <section>
-                    <h3 className="text-lg font-semibold mb-4">SQL Functions</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {schema.functions.map(f => (
-                        <span key={f} className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs mono">{f}()</span>
-                      ))}
+                  <div className="p-6">
+                    <div className="bg-gray-900 rounded-lg p-4 mb-6">
+                      <code className="text-green-400 text-sm">SELECT * FROM {selectedDocTable} LIMIT 10</code>
                     </div>
-                  </section>
-                  
-                  <section>
-                    <h3 className="text-lg font-semibold mb-4">Example Queries</h3>
-                    <div className="space-y-3">
-                      {exampleQueries.map((q, i) => (
-                        <div key={i} className="border rounded-lg overflow-hidden">
-                          <div className="bg-gray-50 px-4 py-2 text-sm font-medium">{q.desc}</div>
-                          <pre className="bg-gray-900 text-green-400 p-4 text-sm overflow-x-auto mono">{q.sql}</pre>
-                          <button onClick={() => { setSqlQuery(q.sql); setShowDocs(false); }}
-                            className="w-full py-2 text-xs text-teal-600 hover:bg-teal-50">Use this query</button>
-                        </div>
-                      ))}
+                    
+                    <h3 className="text-sm font-semibold text-gray-700 mb-4 uppercase">Columns</h3>
+                    <div className="border border-gray-200 rounded-lg overflow-hidden">
+                      <table className="w-full">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="text-left py-2 px-4 text-xs font-semibold text-gray-600 uppercase w-1/3">Column</th>
+                            <th className="text-left py-2 px-4 text-xs font-semibold text-gray-600 uppercase">Description</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(schema.tables[selectedDocTable].columns).map(([col, desc], i) => (
+                            <tr key={col} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                              <td className="py-2 px-4 text-sm mono text-teal-700 font-medium">{col}</td>
+                              <td className="py-2 px-4 text-sm text-gray-600">{desc}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
-                  </section>
+                  </div>
                 </div>
               </div>
             </div>
@@ -531,35 +623,26 @@
                   <label className="text-xs font-semibold text-gray-700 uppercase">SQL Query</label>
                 </div>
                 <div className="relative p-4">
-                  <textarea
-                    ref={textareaRef}
-                    value={sqlQuery}
-                    onChange={handleQueryChange}
-                    onKeyDown={handleKeyDown}
+                  <textarea ref={textareaRef} value={sqlQuery} onChange={handleQueryChange} onKeyDown={handleKeyDown}
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                     placeholder="SELECT * FROM orders WHERE total_price > 100 LIMIT 10"
                     className="w-full h-40 p-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900 resize-none mono"
-                    disabled={!connected}
-                  />
+                    disabled={!connected} />
                   {showSuggestions && suggestions.length > 0 && (
                     <div className="absolute z-10 left-4 right-4 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-64 overflow-y-auto">
                       {suggestions.map((s, i) => (
                         <button key={i} onMouseDown={() => handleSuggestionClick(s)} onMouseEnter={() => setActiveSuggestionIndex(i)}
-                          className={`w-full text-left px-4 py-2.5 border-b border-gray-100 last:border-0 flex items-center justify-between ${i === activeSuggestionIndex ? 'bg-gray-100' : 'hover:bg-gray-50'}`}>
-                          <div className="flex items-center gap-3">
-                            <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
-                              s.type === 'keyword' ? 'bg-purple-100 text-purple-700' :
-                              s.type === 'function' ? 'bg-blue-100 text-blue-700' :
-                              s.type === 'table' ? 'bg-green-100 text-green-700' :
-                              s.type === 'column' ? 'bg-orange-100 text-orange-700' :
-                              'bg-gray-100 text-gray-700'
-                            }`}>{s.type}</span>
-                            <div>
-                              <div className="text-sm font-medium mono">{s.value}</div>
-                              <div className="text-xs text-gray-500">{s.desc}</div>
-                            </div>
+                          className={`w-full text-left px-4 py-2.5 border-b border-gray-100 last:border-0 flex items-center gap-3 ${i === activeSuggestionIndex ? 'bg-gray-100' : 'hover:bg-gray-50'}`}>
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                            s.type === 'keyword' ? 'bg-purple-100 text-purple-700' :
+                            s.type === 'function' ? 'bg-blue-100 text-blue-700' :
+                            s.type === 'table' ? 'bg-green-100 text-green-700' :
+                            'bg-orange-100 text-orange-700'
+                          }`}>{s.type}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium mono truncate">{s.value}</div>
+                            <div className="text-xs text-gray-500 truncate">{s.desc}</div>
                           </div>
-                          {i === activeSuggestionIndex && <kbd className="text-xs text-gray-400">Tab</kbd>}
                         </button>
                       ))}
                     </div>
@@ -568,7 +651,7 @@
                 <div className="border-t px-4 py-2.5 bg-gray-50 flex items-center justify-between">
                   <div className="text-xs text-gray-500">
                     <kbd className="px-1.5 py-0.5 bg-white border rounded">⌘</kbd> + <kbd className="px-1.5 py-0.5 bg-white border rounded">Enter</kbd> to run
-                    {queryTime && <span className="ml-4 text-teal-600">Query took {queryTime}ms</span>}
+                    {queryTime && <span className="ml-4 text-teal-600">{queryTime}ms</span>}
                   </div>
                   <button onClick={executeQuery} disabled={loading || !sqlQuery.trim() || !connected}
                     className="bg-teal-600 text-white py-2 px-4 rounded text-xs font-semibold hover:bg-teal-700 disabled:opacity-50 disabled:bg-gray-300 flex items-center gap-2">
@@ -590,9 +673,7 @@
               <div className="px-4 py-2.5 border-b bg-gray-50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Database className="w-4 h-4 text-gray-600" />
-                  <h3 className="text-xs font-semibold text-gray-700 uppercase">
-                    {allResults ? `${allResults.length} results` : 'Results'}
-                  </h3>
+                  <h3 className="text-xs font-semibold text-gray-700 uppercase">{allResults ? `${allResults.length} results` : 'Results'}</h3>
                 </div>
                 {allResults?.length > 0 && (
                   <div className="relative">
@@ -612,10 +693,7 @@
               </div>
               <div className="min-h-96">
                 {allResults === null ? (
-                  <div className="text-center py-16">
-                    <Database className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                    <p className="text-sm text-gray-600">Run a query to see results</p>
-                  </div>
+                  <div className="text-center py-16"><Database className="w-12 h-12 mx-auto mb-3 text-gray-300" /><p className="text-sm text-gray-600">Run a query to see results</p></div>
                 ) : renderTable()}
               </div>
               {renderPagination()}
@@ -624,8 +702,8 @@
             {/* Quick Reference */}
             <div className="mt-5 pt-5 border-t border-gray-300">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-semibold text-gray-700 uppercase">Available Tables</h3>
-                <button onClick={() => setShowDocs(true)} className="text-xs text-teal-600 hover:underline">View full documentation</button>
+                <h3 className="text-xs font-semibold text-gray-700 uppercase">Tables</h3>
+                <button onClick={() => setShowDocs(true)} className="text-xs text-teal-600 hover:underline">View full schema</button>
               </div>
               <div className="flex flex-wrap gap-2">
                 {Object.keys(schema.tables).map(t => (
